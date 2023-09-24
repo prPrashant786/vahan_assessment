@@ -1,5 +1,6 @@
 package com.example.vahan
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,7 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-class UniversityAdapter(private val universities: List<University>) : RecyclerView.Adapter<UniversityAdapter.ViewHolder>() {
+class UniversityAdapter(private var universities: List<University>) : RecyclerView.Adapter<UniversityAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.university_item_layout, parent, false)
@@ -37,5 +38,11 @@ class UniversityAdapter(private val universities: List<University>) : RecyclerVi
             webPagesRecyclerView.adapter = webPagesAdapter
 
         }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateData(newUniversities: List<University>) {
+        universities = newUniversities
+        notifyDataSetChanged()
     }
 }

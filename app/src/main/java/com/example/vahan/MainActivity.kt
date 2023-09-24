@@ -1,9 +1,13 @@
 package com.example.vahan
 
+import android.content.ComponentName
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
@@ -19,7 +23,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() ,DataRefreshService.DataRefreshCallback {
     private lateinit var recyclerView: RecyclerView
     private lateinit var universityAdapter: UniversityAdapter
 
@@ -29,6 +33,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val refreshServiceIntent = Intent(this, DataRefreshService::class.java)
+        startService(refreshServiceIntent)
+        // Bind to the service
+        bindService(refreshServiceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
 
 
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
@@ -77,7 +86,32 @@ class MainActivity : AppCompatActivity() {
                 loadingProgressBar.visibility = View.GONE
             }
         })
+    }
 
+    override fun onDataRefreshed(data: List<University>) {
+        // Update the RecyclerView with the new data
+        universityAdapter.updateData(data)
+    }
 
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            // Service is connected, you can access it here
+            val binder = service as DataRefreshService.LocalBinder
+            val dataRefreshService = binder.getService()
+
+            // Now you can interact with dataRefreshService
+            // For example, you can set the callback here
+            dataRefreshService.setCallback(this@MainActivity)
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            // Service is disconnected
+        }
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+
+        // Unbind from the service
+        unbindService(serviceConnection)
     }
 }
